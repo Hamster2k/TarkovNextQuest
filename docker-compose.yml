@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  tarkov-quest-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tarkov-quest-app
+    ports:
+      - "3000:80"  # Map host port 3000 to container port 80
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    # Optional: Add volume for logs
+    volumes:
+      - ./logs:/var/log/nginx
