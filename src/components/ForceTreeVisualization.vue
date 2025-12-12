@@ -7,6 +7,8 @@ const props = defineProps<{
   tasks: ProcessedTask[]
   completedTasks: Set<string>
   maxLevel: number
+  selectedTaskId: string | null
+  recommendedTaskId: string | null
 }>()
 
 const emit = defineEmits<{
@@ -18,7 +20,17 @@ const svgRef = ref<SVGSVGElement | null>(null)
 const tasksRef = toRef(props, 'tasks')
 const completedTasksRef = toRef(props, 'completedTasks')
 const maxLevelRef = toRef(props, 'maxLevel')
-const { initSimulation } = useForceSimulation(svgRef, tasksRef, completedTasksRef, maxLevelRef, emit)
+const selectedTaskIdRef = toRef(props, 'selectedTaskId')
+const recommendedTaskIdRef = toRef(props, 'recommendedTaskId')
+const { initSimulation } = useForceSimulation(
+  svgRef, 
+  tasksRef, 
+  completedTasksRef, 
+  maxLevelRef, 
+  selectedTaskIdRef,
+  recommendedTaskIdRef,
+  emit
+)
 
 onMounted(() => {
   if (props.tasks.length > 0) {

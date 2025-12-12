@@ -280,6 +280,8 @@ const updateMaxLevel = (level: number) => {
         :tasks="filteredTasks"
         :completed-tasks="completedTasks"
         :max-level="maxLevel"
+        :selected-task-id="selectedTask?.id ?? null"
+        :recommended-task-id="recommendedQuest?.id ?? null"
         @node-click="handleNodeClick"
         @toggle-completion="toggleTaskCompletion"
       />

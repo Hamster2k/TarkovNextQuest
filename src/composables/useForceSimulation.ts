@@ -9,6 +9,8 @@ export function useForceSimulation(
   tasks: Ref<ProcessedTask[]>,
   completedTasks: Ref<Set<string>>,
   maxLevel: Ref<number>,
+  selectedTaskId: Ref<string | null>,
+  recommendedTaskId: Ref<string | null>,
   emit: any
 ) {
   const simulation = ref<d3.Simulation<TaskNode, TaskLink> | null>(null)
@@ -223,15 +225,40 @@ export function useForceSimulation(
         return getTraderColor(d.trader)
       })
       .attr('stroke', d => {
+        // Purple border for selected task
+        if (selectedTaskId.value === d.id) {
+          return '#a855f7' // Purple for selected
+        }
+        // Gold border for recommended task
+        if (recommendedTaskId.value === d.id) {
+          return '#fbbf24' // Gold for recommended
+        }
         // Green border for completed tasks
         if (completedTasks.value.has(d.id)) {
           return '#10b981'
         }
         return '#fff'
       })
-      .attr('stroke-width', d => completedTasks.value.has(d.id) ? 3 : 2)
+      .attr('stroke-width', d => {
+        // Thicker border for selected/recommended
+        if (selectedTaskId.value === d.id || recommendedTaskId.value === d.id) {
+          return 4
+        }
+        return completedTasks.value.has(d.id) ? 3 : 2
+      })
       .style('cursor', 'pointer')
       .style('opacity', d => completedTasks.value.has(d.id) ? 0.6 : 1)
+      .style('filter', d => {
+        // Add glow effect for recommended quest
+        if (recommendedTaskId.value === d.id) {
+          return 'drop-shadow(0 0 8px #fbbf24)'
+        }
+        // Add glow effect for selected quest
+        if (selectedTaskId.value === d.id) {
+          return 'drop-shadow(0 0 8px #a855f7)'
+        }
+        return 'none'
+      })
       .on('click', (_event, d) => {
         emit('node-click', d)
       })
@@ -274,9 +301,24 @@ export function useForceSimulation(
           .text(d.name)
       })
       .on('mouseout', function(_event, d) {
+        // Restore original stroke based on task state
+        let strokeColor = '#fff'
+        let strokeWidth = 2
+        
+        if (selectedTaskId.value === d.id) {
+          strokeColor = '#a855f7' // Purple for selected
+          strokeWidth = 4
+        } else if (recommendedTaskId.value === d.id) {
+          strokeColor = '#fbbf24' // Gold for recommended
+          strokeWidth = 4
+        } else if (completedTasks.value.has(d.id)) {
+          strokeColor = '#10b981' // Green for completed
+          strokeWidth = 3
+        }
+        
         d3.select(this)
-          .attr('stroke', completedTasks.value.has(d.id) ? '#10b981' : '#fff')
-          .attr('stroke-width', completedTasks.value.has(d.id) ? 3 : 2)
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', strokeWidth)
         
         // Restore original link opacity
         link.style('stroke-opacity', function(l) {
@@ -301,6 +343,18 @@ export function useForceSimulation(
           .select('.node-label')
           .remove()
       })
+
+    // Add star icon for recommended quest
+    node.append('text')
+      .attr('class', 'recommended-star')
+      .attr('dy', -25)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '20px')
+      .style('fill', '#fbbf24')
+      .style('pointer-events', 'none')
+      .style('filter', 'drop-shadow(0 0 4px rgba(251, 191, 36, 0.8))')
+      .style('display', d => recommendedTaskId.value === d.id ? 'block' : 'none')
+      .text('⭐')
 
     // Add labels for larger nodes
     node.append('text')
@@ -596,13 +650,45 @@ export function useForceSimulation(
       })
       .attr('stroke', d => {
         const taskNode = d as TaskNode
+        // Purple border for selected task
+        if (selectedTaskId.value === taskNode.id) {
+          return '#a855f7'
+        }
+        // Gold border for recommended task
+        if (recommendedTaskId.value === taskNode.id) {
+          return '#fbbf24'
+        }
+        // Green border for completed tasks
         if (completedTasks.value.has(taskNode.id)) {
           return '#10b981'
         }
         return '#fff'
       })
-      .attr('stroke-width', d => completedTasks.value.has((d as TaskNode).id) ? 3 : 2)
+      .attr('stroke-width', d => {
+        const taskNode = d as TaskNode
+        if (selectedTaskId.value === taskNode.id || recommendedTaskId.value === taskNode.id) {
+          return 4
+        }
+        return completedTasks.value.has(taskNode.id) ? 3 : 2
+      })
       .style('opacity', d => completedTasks.value.has((d as TaskNode).id) ? 0.6 : 1)
+      .style('filter', d => {
+        const taskNode = d as TaskNode
+        if (recommendedTaskId.value === taskNode.id) {
+          return 'drop-shadow(0 0 8px #fbbf24)'
+        }
+        if (selectedTaskId.value === taskNode.id) {
+          return 'drop-shadow(0 0 8px #a855f7)'
+        }
+        return 'none'
+      })
+    
+    // Update star visibility for recommended quest
+    nodesSelection.value.selectAll('.recommended-star')
+      .style('display', d => {
+        const taskNode = d as TaskNode
+        return recommendedTaskId.value === taskNode.id ? 'block' : 'none'
+      })
   }
 
   const updateLevelCircles = () => {
@@ -651,6 +737,16 @@ export function useForceSimulation(
   // Watch for max level changes - only update circle visibility
   watch(maxLevel, () => {
     updateLevelCircles()
+  })
+
+  // Watch for selected task changes - update styles
+  watch(selectedTaskId, () => {
+    updateNodeStyles()
+  })
+
+  // Watch for recommended task changes - update styles
+  watch(recommendedTaskId, () => {
+    updateNodeStyles()
   })
 
   onUnmounted(() => {

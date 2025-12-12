@@ -7,6 +7,7 @@ services:
     ports:
       - "80:80"  # Change to "3000:80" if port 80 is already in use
     restart: unless-stopped
+    pull_policy: always  # Always pull latest image
     environment:
       - NODE_ENV=production
     # Optional: Add logging configuration
@@ -15,3 +16,17 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300     # Check for updates every 5 minutes (300 seconds)
+      - WATCHTOWER_CLEANUP=true          # Remove old images after updating
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_LABEL_ENABLE=true     # Only watch containers with the label
+    restart: unless-stopped
