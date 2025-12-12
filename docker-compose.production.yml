@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  tarkov-quest-app:
+    image: ghcr.io/hamster2k/tarkovnextquest:latest
+    container_name: tarkov-quest-app
+    ports:
+      - "80:80"  # Change to "3000:80" if port 80 is already in use
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    # Optional: Add logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

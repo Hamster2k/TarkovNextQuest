@@ -73,7 +73,8 @@ npm run preview
 
 ## 🐳 Docker Deployment
 
-Deploy with Docker for production:
+### Local Development
+Deploy locally with Docker:
 
 ```bash
 # Build and start with Docker Compose
@@ -82,7 +83,30 @@ docker-compose up -d
 # Access at http://localhost:3000
 ```
 
-See [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md) for detailed deployment instructions.
+See [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md) for local Docker instructions.
+
+### Production Server Deployment
+
+Every push to `main` automatically builds a Docker image via GitHub Actions.
+
+**Quick Deploy on Your Server:**
+
+```bash
+# Linux
+curl -O https://raw.githubusercontent.com/Hamster2k/TarkovNextQuest/main/deploy.sh
+chmod +x deploy.sh
+./deploy.sh
+
+# Windows
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Hamster2k/TarkovNextQuest/main/deploy.ps1" -OutFile "deploy.ps1"
+.\deploy.ps1
+```
+
+See [SERVER_DEPLOYMENT.md](./SERVER_DEPLOYMENT.md) for complete server deployment guide including:
+- Automated deployments
+- Custom domains & HTTPS
+- Auto-updates with Watchtower
+- Monitoring & troubleshooting
 
 ## 🛠️ Tech Stack
 
