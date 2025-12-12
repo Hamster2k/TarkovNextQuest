@@ -12,29 +12,34 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   'toggle-complete': [taskId: string]
+  'select-task': [taskId: string]
 }>()
 
-// Create a map of task IDs to task names for quick lookup
-const taskMap = computed(() => {
-  const map = new Map<string, string>()
+// Create a map of task IDs to full task objects for prerequisites
+const taskObjectMap = computed(() => {
+  const map = new Map<string, ProcessedTask>()
   props.allTasks.forEach(task => {
-    map.set(task.id, task.name)
+    map.set(task.id, task)
   })
   return map
 })
 
-// Get prerequisite names instead of IDs
-const prerequisiteNames = computed(() => {
+// Get prerequisite tasks with their full data
+const prerequisiteTasks = computed(() => {
   if (!props.task) return []
   return props.task.prerequisites
-    .map(prereqId => taskMap.value.get(prereqId) || prereqId)
-    .filter(name => name) // Remove any undefined values
+    .map(prereqId => taskObjectMap.value.get(prereqId))
+    .filter(task => task !== undefined) as ProcessedTask[]
 })
 
 const handleToggleComplete = () => {
   if (props.task) {
     emit('toggle-complete', props.task.id)
   }
+}
+
+const handlePrerequisiteClick = (taskId: string) => {
+  emit('select-task', taskId)
 }
 </script>
 
@@ -86,9 +91,14 @@ const handleToggleComplete = () => {
 
     <div v-if="task.prerequisites.length > 0" class="section">
       <h3>Prerequisites</h3>
-      <ul>
-        <li v-for="(prereqName, index) in prerequisiteNames" :key="task.prerequisites[index]">
-          {{ prereqName }}
+      <ul class="prerequisite-list">
+        <li 
+          v-for="prereqTask in prerequisiteTasks" 
+          :key="prereqTask.id"
+          @click="handlePrerequisiteClick(prereqTask.id)"
+          class="prerequisite-item"
+        >
+          {{ prereqTask.name }}
         </li>
       </ul>
     </div>
@@ -251,6 +261,44 @@ const handleToggleComplete = () => {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+
+.prerequisite-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.prerequisite-item {
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.prerequisite-item:hover {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.5);
+  transform: translateX(4px);
+}
+
+.prerequisite-item::after {
+  content: '→';
+  position: absolute;
+  right: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  color: #fbbf24;
+}
+
+.prerequisite-item:hover::after {
+  opacity: 1;
 }
 
 .section li {

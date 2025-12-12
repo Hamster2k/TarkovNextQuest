@@ -236,6 +236,13 @@ const handleSelectRecommendedQuest = (task: ProcessedTask) => {
   selectedTask.value = task
 }
 
+const handleSelectTaskById = (taskId: string) => {
+  const task = tasks.value.find(t => t.id === taskId)
+  if (task) {
+    selectedTask.value = task
+  }
+}
+
 const closeDetails = () => {
   selectedTask.value = null
 }
@@ -364,6 +371,7 @@ const hideAllMaps = () => {
           :is-completed="isTaskCompleted(selectedTask.id)"
           @close="closeDetails"
           @toggle-complete="toggleTaskCompletion"
+          @select-task="handleSelectTaskById"
         />
       </div>
     </main>
