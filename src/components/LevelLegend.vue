@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getTraderColor } from '../services/taskProcessor'
+import { getTraderColor, getLevelColor } from '../services/taskProcessor'
 import type { ProcessedTask } from '../types/tasks'
 
 const props = defineProps<{
@@ -25,7 +25,12 @@ const emit = defineEmits<{
   'hide-all-traders': []
   'show-all-maps': []
   'hide-all-maps': []
+  'select-task': [taskId: string]
 }>()
+
+// Search state
+const searchQuery = ref('')
+const searchExpanded = ref(false)
 
 // Collapsible section states
 const tradersExpanded = ref(true)
@@ -150,10 +155,91 @@ const showAllMaps = () => {
 const hideAllMaps = () => {
   emit('hide-all-maps')
 }
+
+// Search functionality
+const searchResults = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return []
+  }
+  
+  const query = searchQuery.value.toLowerCase()
+  return props.allTasks
+    .filter(task => task.name.toLowerCase().includes(query))
+    .sort((a, b) => {
+      // Sort by completion status (uncompleted first), then by level
+      const aCompleted = props.completedTasks.has(a.id)
+      const bCompleted = props.completedTasks.has(b.id)
+      
+      if (aCompleted !== bCompleted) {
+        return aCompleted ? 1 : -1
+      }
+      
+      return a.level - b.level
+    })
+    .slice(0, 10) // Limit to 10 results
+})
+
+const selectTask = (taskId: string) => {
+  emit('select-task', taskId)
+  // Clear search after selecting
+  searchQuery.value = ''
+  searchExpanded.value = false
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+}
 </script>
 
 <template>
   <div class="level-legend">
+    <!-- Search Section -->
+    <div class="legend-section search-section">
+      <h3 @click="searchExpanded = !searchExpanded" class="collapsible-header">
+        <span class="toggle-icon">{{ searchExpanded ? '▼' : '►' }}</span>
+        Search Quests
+      </h3>
+      <div v-if="searchExpanded" class="search-container">
+        <div class="search-input-wrapper">
+          <input 
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by quest name..."
+            class="search-input"
+            @focus="searchExpanded = true"
+          />
+          <button 
+            v-if="searchQuery" 
+            @click="clearSearch" 
+            class="clear-search-btn"
+          >
+            ✕
+          </button>
+        </div>
+        <div v-if="searchResults.length > 0" class="search-results">
+          <div 
+            v-for="task in searchResults" 
+            :key="task.id"
+            @click="selectTask(task.id)"
+            class="search-result-item"
+            :class="{ completed: completedTasks.has(task.id) }"
+          >
+            <div class="result-name">{{ task.name }}</div>
+            <div class="result-meta">
+              <span class="result-level" :style="{ color: getLevelColor(task.level) }">
+                Lv {{ task.level }}
+              </span>
+              <span class="result-trader">{{ task.trader }}</span>
+              <span v-if="completedTasks.has(task.id)" class="result-completed">✓</span>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="searchQuery.trim()" class="no-results">
+          No quests found
+        </div>
+      </div>
+    </div>
+
     <div class="legend-section">
       <h3 @click="tradersExpanded = !tradersExpanded" class="collapsible-header">
         <span class="toggle-icon">{{ tradersExpanded ? '▼' : '►' }}</span>
@@ -311,6 +397,122 @@ const hideAllMaps = () => {
 
 .legend-section:last-of-type {
   margin-bottom: 0;
+}
+
+.search-section {
+  border-bottom: 1px solid #444;
+  padding-bottom: 15px;
+}
+
+.search-container {
+  margin-top: 12px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 35px 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: rgba(251, 191, 36, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  color: #fbbf24;
+}
+
+.search-results {
+  margin-top: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 4px;
+}
+
+.search-result-item {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.5);
+  transform: translateX(4px);
+}
+
+.search-result-item.completed {
+  opacity: 0.6;
+}
+
+.result-name {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.result-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #999;
+  align-items: center;
+}
+
+.result-level {
+  font-weight: 600;
+}
+
+.result-trader {
+  color: #aaa;
+}
+
+.result-completed {
+  color: #10b981;
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
 }
 
 .legend-section.filters {

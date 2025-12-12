@@ -361,6 +361,7 @@ const hideAllMaps = () => {
           @hide-all-traders="hideAllTraders"
           @show-all-maps="showAllMaps"
           @hide-all-maps="hideAllMaps"
+          @select-task="handleSelectTaskById"
         />
       </div>
 
