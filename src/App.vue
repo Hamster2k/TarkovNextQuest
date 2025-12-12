@@ -129,6 +129,25 @@ const recommendedQuest = computed(() => {
       return false
     }
     
+    // Filter by level
+    if (task.level > maxLevel.value) {
+      return false
+    }
+    
+    // Filter by trader
+    if (!visibleTraders.value.has(task.trader)) {
+      return false
+    }
+    
+    // Filter by map (include tasks without a map if "Any" is visible)
+    const mapMatch = task.map 
+      ? visibleMaps.value.has(task.map)
+      : visibleMaps.value.has('Any')
+    
+    if (!mapMatch) {
+      return false
+    }
+    
     // Apply Kappa and Lightkeeper filters (matching the main filter logic)
     if (filterKappa.value || filterLightkeeper.value) {
       if (filterKappa.value && filterLightkeeper.value) {
