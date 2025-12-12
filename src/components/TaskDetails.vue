@@ -13,6 +13,7 @@ const emit = defineEmits<{
   close: []
   'toggle-complete': [taskId: string]
   'select-task': [taskId: string]
+  'make-available': [taskId: string]
 }>()
 
 // Create a map of task IDs to full task objects for prerequisites
@@ -38,6 +39,12 @@ const handleToggleComplete = () => {
   }
 }
 
+const handleMakeAvailable = () => {
+  if (props.task) {
+    emit('make-available', props.task.id)
+  }
+}
+
 const handlePrerequisiteClick = (taskId: string) => {
   emit('select-task', taskId)
 }
@@ -48,14 +55,24 @@ const handlePrerequisiteClick = (taskId: string) => {
     <div class="header">
       <div class="header-content">
         <h2>{{ task.name }}</h2>
-        <button 
-          @click="handleToggleComplete" 
-          class="complete-btn"
-          :class="{ completed: isCompleted }"
-        >
-          <span v-if="isCompleted">✓ Completed</span>
-          <span v-else>Mark Complete</span>
-        </button>
+        <div class="action-buttons">
+          <button 
+            v-if="task.prerequisites.length > 0"
+            @click="handleMakeAvailable" 
+            class="available-btn"
+            title="Complete all prerequisite quests"
+          >
+            Make Available
+          </button>
+          <button 
+            @click="handleToggleComplete" 
+            class="complete-btn"
+            :class="{ completed: isCompleted }"
+          >
+            <span v-if="isCompleted">✓ Completed</span>
+            <span v-else>Mark Complete</span>
+          </button>
+        </div>
       </div>
       <button @click="emit('close')" class="close-btn">&times;</button>
     </div>
@@ -148,6 +165,30 @@ const handlePrerequisiteClick = (taskId: string) => {
   margin: 0;
   font-size: 20px;
   color: #fbbf24;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.available-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border: none;
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.available-btn:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
 }
 
 .complete-btn {

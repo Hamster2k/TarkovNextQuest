@@ -107,6 +107,20 @@ const toggleTaskCompletion = (taskId: string) => {
   saveCompletedTasks()
 }
 
+// Make a task available by completing all prerequisites but not the task itself
+const handleMakeAvailable = (taskId: string) => {
+  const newCompleted = new Set(completedTasks.value)
+  
+  // Complete all prerequisites recursively
+  completePrerequisites(taskId, newCompleted)
+  
+  // Ensure the target task itself is not completed
+  newCompleted.delete(taskId)
+  
+  completedTasks.value = newCompleted
+  saveCompletedTasks()
+}
+
 // Check if a task is completed
 const isTaskCompleted = (taskId: string) => {
   return completedTasks.value.has(taskId)
@@ -373,6 +387,7 @@ const hideAllMaps = () => {
           @close="closeDetails"
           @toggle-complete="toggleTaskCompletion"
           @select-task="handleSelectTaskById"
+          @make-available="handleMakeAvailable"
         />
       </div>
     </main>
