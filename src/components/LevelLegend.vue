@@ -135,6 +135,20 @@ const getMapCount = (mapName: string) => {
   }).length
 }
 
+// Count remaining Kappa quests
+const kappaQuestsRemaining = computed(() => {
+  return props.allTasks.filter(task => 
+    task.kappaRequired && !props.completedTasks.has(task.id)
+  ).length
+})
+
+// Count remaining Lightkeeper quests
+const lightkeeperQuestsRemaining = computed(() => {
+  return props.allTasks.filter(task => 
+    task.lightkeeperRequired && !props.completedTasks.has(task.id)
+  ).length
+})
+
 const handleLevelChange = (event: Event) => {
   const value = Number((event.target as HTMLInputElement).value)
   emit('update-max-level', value)
@@ -327,6 +341,7 @@ const clearSearch = () => {
             @change="emit('toggle-kappa')"
           />
           <span class="filter-badge kappa">Kappa Required</span>
+          <span class="quest-counter">{{ kappaQuestsRemaining }}</span>
         </label>
         <label class="filter-item" :class="{ active: filterLightkeeper }">
           <input 
@@ -335,6 +350,7 @@ const clearSearch = () => {
             @change="emit('toggle-lightkeeper')"
           />
           <span class="filter-badge lightkeeper">Lightkeeper Required</span>
+          <span class="quest-counter">{{ lightkeeperQuestsRemaining }}</span>
         </label>
         <label class="filter-item" :class="{ active: filterUnlocked }">
           <input 
@@ -704,6 +720,22 @@ const clearSearch = () => {
 .filter-badge.unlocked {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
+}
+
+.quest-counter {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: bold;
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.filter-item.active .quest-counter {
+  background: rgba(251, 191, 36, 0.3);
 }
 
 .level-slider-container {
