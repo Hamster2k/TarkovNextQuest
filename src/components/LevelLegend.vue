@@ -21,6 +21,10 @@ const emit = defineEmits<{
   'toggle-lightkeeper': []
   'toggle-unlocked': []
   'update-max-level': [level: number]
+  'show-all-traders': []
+  'hide-all-traders': []
+  'show-all-maps': []
+  'hide-all-maps': []
 }>()
 
 // Collapsible section states
@@ -130,6 +134,22 @@ const handleLevelChange = (event: Event) => {
   const value = Number((event.target as HTMLInputElement).value)
   emit('update-max-level', value)
 }
+
+const showAllTraders = () => {
+  emit('show-all-traders')
+}
+
+const hideAllTraders = () => {
+  emit('hide-all-traders')
+}
+
+const showAllMaps = () => {
+  emit('show-all-maps')
+}
+
+const hideAllMaps = () => {
+  emit('hide-all-maps')
+}
 </script>
 
 <template>
@@ -140,6 +160,10 @@ const handleLevelChange = (event: Event) => {
         Traders 
         <span class="legend-subtitle">(click to toggle)</span>
       </h3>
+      <div v-if="tradersExpanded" class="toggle-all-buttons">
+        <button @click.stop="showAllTraders" class="toggle-all-btn">Show All</button>
+        <button @click.stop="hideAllTraders" class="toggle-all-btn">Hide All</button>
+      </div>
       <div v-if="tradersExpanded" class="legend-items">
         <div 
           v-for="trader in traders" 
@@ -164,6 +188,10 @@ const handleLevelChange = (event: Event) => {
         Maps 
         <span class="legend-subtitle">(click to toggle)</span>
       </h3>
+      <div v-if="mapsExpanded" class="toggle-all-buttons">
+        <button @click.stop="showAllMaps" class="toggle-all-btn">Show All</button>
+        <button @click.stop="hideAllMaps" class="toggle-all-btn">Hide All</button>
+      </div>
       <div v-if="mapsExpanded" class="legend-items">
         <div 
           v-for="map in maps" 
@@ -296,6 +324,36 @@ const handleLevelChange = (event: Event) => {
   font-weight: normal;
   text-transform: none;
   letter-spacing: normal;
+}
+
+.toggle-all-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.toggle-all-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.toggle-all-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+  transform: translateY(-1px);
+}
+
+.toggle-all-btn:active {
+  transform: translateY(0);
 }
 
 .legend-items {

@@ -256,6 +256,29 @@ const toggleUnlocked = () => {
 const updateMaxLevel = (level: number) => {
   maxLevel.value = level
 }
+
+const showAllTraders = () => {
+  visibleTraders.value = new Set([
+    'Prapor', 'Therapist', 'Fence', 'Skier', 'Peacekeeper', 
+    'Mechanic', 'Ragman', 'Jaeger', 'Lightkeeper', 'Ref'
+  ])
+}
+
+const hideAllTraders = () => {
+  visibleTraders.value = new Set()
+}
+
+const showAllMaps = () => {
+  visibleMaps.value = new Set([
+    'Customs', 'Woods', 'Shoreline', 'Interchange', 'Reserve', 
+    'Lighthouse', 'Streets of Tarkov', 'Ground Zero', 'Factory', 
+    'The Lab', 'Any'
+  ])
+}
+
+const hideAllMaps = () => {
+  visibleMaps.value = new Set()
+}
 </script>
 
 <template>
@@ -308,6 +331,10 @@ const updateMaxLevel = (level: number) => {
           @toggle-lightkeeper="toggleLightkeeper"
           @toggle-unlocked="toggleUnlocked"
           @update-max-level="updateMaxLevel"
+          @show-all-traders="showAllTraders"
+          @hide-all-traders="hideAllTraders"
+          @show-all-maps="showAllMaps"
+          @hide-all-maps="hideAllMaps"
         />
       </div>
 
